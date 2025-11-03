@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ESP8266 DHT11 Monitor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+    <script src="/script.js" defer></script>
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="theme-color" content="#0ea5e9" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0ea5e9" media="(prefers-color-scheme: dark)">
+    <meta name="msapplication-navbutton-color" content="#0ea5e9"><!-- For Opera and Windows Phone -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><!-- For iOS Safari -->
+    <meta name="application-name" content="ESP8266 DHT11 Monitor">
+    <style>
+      body {
+        background-color: #0ea5e9; /* Fallback for browsers not supporting theme-color */
+      }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <h1 class="brand">ESP8266 DHT11 Monitor</h1>
+            <div class="status">
+                <span id="connectionStatus" class="badge badge-disconnected">Disconnected</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="cards">
+            <div class="card">
+                <div class="card-label">Temperature</div>
+                <div class="card-value" id="tempValue">-- °C</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Humidity</div>
+                <div class="card-value" id="humValue">-- %</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Updated</div>
+                <div class="card-value small" id="updatedAt">--</div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Live Trend</h2>
+                <div class="controls">
+                    <label class="control">
+                        <span>Poll (s)</span>
+                        <input type="number" id="pollIntervalLive" min="2" max="120" value="5">
+                    </label>
+                    <button id="toggleLive" class="btn">Start</button>
+                </div>
+            </div>
+            <canvas id="trendChart" height="120"></canvas>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Send Test Reading (Dev)</h2>
+            </div>
+            <form id="testForm" class="test-form">
+                <input type="number" id="testTemp" step="0.1" placeholder="Temp °C" required>
+                <input type="number" id="testHum" step="0.1" placeholder="Humidity %" required>
+                <button class="btn" type="submit">Push</button>
+                <span class="muted">POST /api/push</span>
+            </form>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <span class="muted">ESP8266 DHT11 • Vercel-ready • Local friendly</span>
+        </div>
+    </footer>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ESP8266 DHT11 Monitor</title>
+  <meta name="description" content="Neat and clean dashboard to monitor ESP8266 + DHT11 sensor data." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <div class="brand">
+        <span class="brand__logo" aria-hidden="true">◌</span>
+        <span class="brand__text">ESP8266 DHT11 Monitor</span>
+      </div>
+      <div class="header__actions">
+        <button id="settingsBtn" class="btn btn--ghost" aria-label="Open settings">Settings</button>
+        <span id="statusBadge" class="badge badge--disconnected">Disconnected</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main">
+    <section class="grid">
+      <div class="card">
+        <div class="card__header">
+          <h2 class="card__title">Temperature</h2>
+          <span class="unit">°C</span>
+        </div>
+        <div id="tempValue" class="metric">--</div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <h2 class="card__title">Humidity</h2>
+          <span class="unit">%</span>
+        </div>
+        <div id="humValue" class="metric">--</div>
+      </div>
+
+      <div class="card">
+        <div class="card__header">
+          <h2 class="card__title">Heat Index</h2>
+          <span class="unit">°C</span>
+        </div>
+        <div id="heatIndexValue" class="metric">--</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">Details</h2>
+      </div>
+      <div class="details">
+        <div class="details__row"><span class="label">Device:</span><span id="deviceUrl" class="value">Not set</span></div>
+        <div class="details__row"><span class="label">Last update:</span><span id="lastUpdate" class="value">—</span></div>
+        <div class="details__row"><span class="label">Polling:</span><span id="pollingEvery" class="value">5s</span></div>
+      </div>
+    </section>
+
+    <section class="card wiring">
+      <div class="card__header">
+        <h2 class="card__title">Wiring Reference</h2>
+      </div>
+      <ul class="wiring__list">
+        <li><strong>DHT11</strong>: data → ESP8266 <code>D3</code> (labeled D0 on sensor board)</li>
+        <li><strong>LCD (I2C)</strong>: <code>SDA → D7</code>, <code>SCL → D5</code> on ESP8266</li>
+      </ul>
+    </section>
+  </main>
+
+  <dialog id="settingsDialog" class="dialog">
+    <form method="dialog" class="dialog__content" id="settingsForm">
+      <h3>Settings</h3>
+      <label class="field">
+        <span class="field__label">Device Base URL</span>
+        <input id="deviceBaseUrl" class="input" type="url" placeholder="http://192.168.1.50" required />
+      </label>
+      <label class="field">
+        <span class="field__label">Data Endpoint Path</span>
+        <input id="dataPath" class="input" type="text" value="/sensor" required />
+        <small class="hint">Expected JSON: { temperature, humidity, heatIndex?, timestamp? }</small>
+      </label>
+      <label class="field">
+        <span class="field__label">Polling Interval (seconds)</span>
+        <input id="pollIntervalSettings" class="input" type="number" min="2" value="5" required />
+      </label>
+
+      <div class="dialog__actions">
+        <button type="button" value="cancel" class="btn btn--ghost">Cancel</button>
+        <button id="saveSettings" type="submit" value="default" class="btn">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer class="footer">
+    <div class="container">
+      <span>ESP8266 + DHT11 Monitor</span>
+      <span>•</span>
+      <a href="https://vercel.com" target="_blank" rel="noreferrer noopener">Deploy on Vercel</a>
+    </div>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
+
+
